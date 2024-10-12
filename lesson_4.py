@@ -87,12 +87,17 @@ class Warrior(Hero):
 
 
 class Magic(Hero):
-    def __init__(self, name, health, damage):
+    def __init__(self, name, health, damage, boost_point):
         super().__init__(name, health, damage, 'BOOST')
+        self.__boost_point = boost_point
+
 
     def apply_super_power(self, boss, heroes_list):
-        # TODO here will be implementation of boosting
-        pass
+        for hero in heroes_list:
+            if hero != self and hero.health > 0:
+                hero.damage += self.__boost_point
+                print(f"Маг {self.name} усилил атаку {hero.name} на {self.__boost_point} единиц.")
+
 
 
 class Berserk(Hero):
@@ -123,6 +128,29 @@ class Medic(Hero):
             if hero.health > 0 and hero != self:
                 hero.health += self.__heal_points
 
+class Witcher(Hero):
+    def __init__(self, name, health):
+        super().__init__(name, health, 0, 'REVIVE')
+
+    def apply_super_power(self, boss, heroes_list):
+        for hero in heroes_list:
+            if hero.health == 0 and self.health > 0:
+                hero.health = self.health
+                self.health = 0
+                print(f'Witcher {self.name} revived {hero.name} by giving him own life({hero.health}hp).')
+
+
+class Hacker(Hero):
+    def __init__(self, name, health, damage):
+        super().__init__(name, health, damage, 'STEALING_HP')
+
+    def apply_super_power(self, boss, heroes_list):
+        if round_number % 2 == 1:
+            hp_amount = randint(1, 15)
+            chosen_hero = choice(heroes_list)
+            boss.health -= hp_amount
+            chosen_hero.health += hp_amount
+            print(f'Hacker {self.name} stole {hp_amount} HP from the BOSS and give it to {chosen_hero.name}')
 
 round_number = 0
 
@@ -166,16 +194,17 @@ def start_game():
 
     warrior_1 = Warrior(name='Asterix', health=290, damage=10)
     warrior_2 = Warrior(name='Obelix', health=280, damage=15)
-    magic = Magic(name='Alice', health=270, damage=5)
+    magic = Magic(name='Alice', health=270, damage=5, boost_point=3)
     berserk = Berserk(name='Guts', health=220, damage=10)
     doc = Medic(name='Doc', health=200, damage=5, heal_points=15)
     assistant = Medic(name='Junior', health=300, damage=5, heal_points=5)
+    witcher = Witcher(name='Geralt', health=150)
+    hacker = Hacker(name='Anonymous', health=150, damage=10)
 
-    heroes_list = [warrior_1, doc, warrior_2, magic, berserk, assistant]
+    heroes_list = [warrior_1, doc, warrior_2, magic, berserk, assistant, witcher, hacker]
     show_statistics(boss, heroes_list)
 
     while not is_game_over(boss, heroes_list):
         play_round(boss, heroes_list)
-
 
 start_game()
